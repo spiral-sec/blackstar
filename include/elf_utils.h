@@ -25,13 +25,13 @@
 
 /*
    To get the func section size, we can use
-        size -d -A [binary]
+        size -d -A --radix=16 [binary]
     to get ELF_CODE's section size.
 
     Warning: If the binary is packed with UPX,
     there will be no sections left.
 */
-#define ELF_FUNC_SIZE (486)
+#define ELF_FUNC_SIZE (0x774)
 
 #include "setup.h"
 

