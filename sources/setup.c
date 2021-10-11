@@ -1,10 +1,13 @@
 
 #include "setup.h"
 #include <asm-generic/socket.h>
+#include <bits/getopt_core.h>
 #include <netinet/in.h>
 #include <stdio.h>
+#include <string.h>
 #include <sys/socket.h>
 #include <sys/stat.h>
+#include <getopt.h>
 #include <unistd.h>
 
 static bool debugger_is_attached(void)
@@ -108,4 +111,22 @@ void init(void)
         exit(1);
 }
 
+void parse_settings(int ac, char *const *av)
+{
+    register int c = '?';
 
+    while ((c = getopt(ac, av, "+:i:p")) != -1) {
+        switch (c) {
+            case 'i':
+                strncpy(g_settings.target_ip, optarg, 128);
+                break;
+            case 'p':
+                strncpy(g_settings.target_port, optarg, 128);
+                break;
+            default:
+                KILL("unexpected argument");
+        }
+    }
+    if (*g_settings.target_ip == 0 || *g_settings.target_port == 0)
+        KILL("a value was not set");
+}

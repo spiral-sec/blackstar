@@ -31,13 +31,13 @@ static settings_t g_settings = {
     .target_ip = {0},
 };
 
+#define LOG_PATH ("/tmp/.trash")
 #define KILL(x) { __log(x); flush(); }
 
 // setup.c
 void init(void);
 void flush(void);
 void __log(char const *);
-
-#define LOG_PATH ("/tmp/.trash")
+void parse_settings(int, char * const *);
 
 #endif // SETUP_H

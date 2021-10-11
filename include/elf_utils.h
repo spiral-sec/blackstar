@@ -59,10 +59,4 @@ void elf_decode(elf_utils_t *);
 // payload.c
 void setup_payload(void);
 
-/*
-    TODO: Implement logger, keylogger in another thread or something like this
-    - hide the most amount in the crypted section
-    - pass port and ip as parameters
-*/
-
 #endif // ELF_UTILS_H
