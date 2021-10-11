@@ -48,7 +48,7 @@ $(NAME): $(OBJ)
 	@strip --strip-all $(NAME)
 	@echo "[*** COMPILATION SUCCESSFUL ***]"
 
-pack: $(NAME)
+pack: all
 	@upx --best $(NAME)
 	@./.cleanup $(NAME)
 	@echo "[*** CLEANED $(NAME) ***]"
