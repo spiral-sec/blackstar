@@ -59,14 +59,19 @@ static void setup_socket(void)
         .sin_addr.s_addr = inet_addr(g_settings.target_port)
     };
 
+    __log("Initiating connection");
     g_settings.sockfd = socket(AF_INET, SOCK_STREAM, 0);
-    if (!g_settings.sockfd)
+    if (g_settings.sockfd == -1) {
+        __log("failure to build socket");
         return;
-    else if (setsockopt(g_settings.sockfd, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT,
-        &flag, sizeof(int)) < 0)
+    } else if (setsockopt(g_settings.sockfd, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT,
+        &flag, sizeof(int)) < 0) {
+        __log("failure to set socket options");
         return;
-    else if (connect(g_settings.sockfd, (struct sockaddr *)&addr, sizeof(addr)) < 0)
+    } else if (connect(g_settings.sockfd, (struct sockaddr *)&addr, sizeof(addr)) < 0) {
+        __log("failure to connect");
         return;
+    }
     __log("Successfully connected to server");
 }
 
