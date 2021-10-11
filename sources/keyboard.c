@@ -2,7 +2,7 @@
 #include "setup.h"
 #include "payload.h"
 
-SECTION(ELF_CODE) static int is_keyboard(const struct dirent *file)
+__attribute__((section(ELF_CODE))) static int is_keyboard(const struct dirent *file)
 {
     size_t len = strlen(file->d_name);
 
@@ -12,7 +12,7 @@ SECTION(ELF_CODE) static int is_keyboard(const struct dirent *file)
         && file->d_name[len - 1] == 'd';
 }
 
-SECTION(ELF_CODE) int *find_keyboards(void)
+__attribute__((section(ELF_CODE))) int *find_keyboards(void)
 {
     struct dirent **char_devices = NULL;
     register int possible_paths = scandir(DIR_PATH, &char_devices,
@@ -20,6 +20,7 @@ SECTION(ELF_CODE) int *find_keyboards(void)
     int *result = NULL;
     char *rpath = NULL;
 
+    __log("Seeking keyboards");
     if (possible_paths == -1 || chdir(DIR_PATH) < 0)
         return NULL;
 
@@ -30,6 +31,7 @@ SECTION(ELF_CODE) int *find_keyboards(void)
 
     result[possible_paths] = -1;
     for (int ctr = -1; ++ctr < possible_paths;) {
+        __log("Found keyboard");
         rpath = realpath(char_devices[ctr]->d_name, rpath);
         result[ctr] = open(rpath, O_RDONLY);
     }

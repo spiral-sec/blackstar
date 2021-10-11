@@ -13,7 +13,6 @@ int main(__attribute__((unused)) int ac, char const * const *av)
     if (!utils)
         exit(1);
 
-    daemonize();
     elf_decode(utils);
     setup_payload();
     return 0;

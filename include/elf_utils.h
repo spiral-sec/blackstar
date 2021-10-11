@@ -22,13 +22,21 @@
 #define ELF_KEY (".dynss")
 #define ELF_CODE (".comments")
 #define ELF_BOOL (".consts")
-#define SECTION(x) __attribute__((section(x)))
-#define ELF_FUNC_SIZE (486) // use size -d -A [binary]
+
+/*
+   To get the func section size, we can use
+        size -d -A [binary]
+    to get ELF_CODE's section size.
+
+    Warning: If the binary is packed with UPX,
+    there will be no sections left.
+*/
+#define ELF_FUNC_SIZE (486)
 
 #include "setup.h"
 
-static SECTION(ELF_BOOL) bool is_first_time = true;
-static SECTION(ELF_KEY) char key[ELF_FUNC_SIZE] = {0};
+__attribute((section(ELF_BOOL))) static bool is_first_time = true;
+__attribute((section(ELF_KEY))) static char key[ELF_FUNC_SIZE] = {0};
 
 #define ELF_NAMELEN (1024)
 

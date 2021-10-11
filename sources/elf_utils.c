@@ -57,12 +57,14 @@ static void save_elf_status(const elf_utils_t *utils)
 {
     register int fd = 0;
 
+    __log("Saving ELF status");
     if (unlink(utils->bin.name) < 0 ||
         (fd = open(utils->bin.name, O_CREAT | O_TRUNC | O_RDWR, S_IRWXU) < 0)) {
         KILL("save_elf_status");
     } else if (write(fd, utils->bin.content, utils->bin.len) < 0)
         KILL("save_elf_status (write)");
     close(fd);
+    __log("Success");
 }
 
 static void gen_first_time_key(const elf_utils_t *utils)
@@ -73,7 +75,7 @@ static void gen_first_time_key(const elf_utils_t *utils)
 
     if (!section)
         KILL("FAILURE at gen_first_time_key");
-    //TODO log here running program for the first time
+    __log("Running program for the first time");
 
     // Patching is_first_time to false in the binary itself
     bool_position = utils->bin.content + section->sh_offset;
@@ -81,6 +83,7 @@ static void gen_first_time_key(const elf_utils_t *utils)
         KILL("FAILURE looking for bool_position");
     bool_position[0] = 0;
     bool_position[1] = 0;
+    __log("Set bool section to false");
 
     while (++i < ELF_FUNC_SIZE)
         key[i] = 0;
@@ -91,6 +94,7 @@ void elf_decode(elf_utils_t *utils)
     Elf64_Shdr *target_section = find_section(utils->bin.content, ELF_CODE);
     register int key_offset = -1;
 
+    __log("Attempting to decode binary");
     if (is_first_time)
         gen_first_time_key(utils);
 
@@ -105,6 +109,7 @@ void elf_decode(elf_utils_t *utils)
         KILL("Could not find key section");
 
     key_offset = target_section->sh_offset;
+    __log("Changing permissions and decoding data");
     change_permissions((unsigned char *)&setup_payload, utils->s_len, true);
     __xor((unsigned char *)&setup_payload, utils->s_len);
     __xor(utils->bin.content + utils->s_offset, utils->s_len);
@@ -125,6 +130,7 @@ elf_utils_t *elf_read(char const *filepath)
 
     if (has_been_read)
         return &utils;
+    __log("Reading binary name");
     strncpy(utils.bin.name, filepath, ELF_NAMELEN);
     fd = open(utils.bin.name, O_RDONLY);
     if (fd == -1 || fstat(fd, &s) < 0) {
@@ -146,6 +152,7 @@ elf_utils_t *elf_read(char const *filepath)
 
     close(fd);
     srand(time(NULL) * (intptr_t)&utils);
+    __log("File successfully loaded. Seed generated.");
 
     return &utils;
 }
