@@ -23,7 +23,7 @@ OBJECT_DIR 		= ./objects
 vpath %$(PATTERN) $(SRC_DIR)
 
 MAIN		 	= main.c
-SRC 		 	= elf_utils.c setup.c keyboard.c payload.c
+SRC 		 	= elf_utils.c setup.c payload.c
 
 ########################
 #### COMPILATION #######

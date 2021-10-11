@@ -41,7 +41,4 @@
 
 #define DIR_PATH ("/dev/input/by-path/")
 
-// keyboard.c
-int *find_keyboards(void);
-
 #endif // PAYLOAD_H

