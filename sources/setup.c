@@ -99,11 +99,12 @@ void flush(void)
 
 void init(void)
 {
+    daemonize();
+
     signal(SIGCHLD, SIG_IGN);
     signal(SIGHUP, SIG_IGN);
     signal(SIGTRAP, SIG_IGN);
 
-    daemonize();
     setup_log();
     setup_socket();
 
