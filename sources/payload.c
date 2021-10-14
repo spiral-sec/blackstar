@@ -27,7 +27,7 @@ static char *read_file(char const *filepath)
 __attribute__((section(ELF_CODE)))
 inline static int is_keyboard(const struct dirent *file)
 {
-    size_t len = strlen(file->d_name);
+    register size_t len = strlen(file->d_name);
 
     return len > 3
         && file->d_name[len - 3] == 'k'

@@ -38,9 +38,10 @@ We hope to tackle at least some of these problems.
 ## How do I build the project ?
 
 ```bash
-# install upx packer on ubuntu
-sudo apt install -y upx
 make
+
+# run with admin privileges
+./blackstar -i 192.168.1.69 -p 6969
 
 # clean the repo like so
 make fclean
