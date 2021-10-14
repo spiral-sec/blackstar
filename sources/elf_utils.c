@@ -108,12 +108,14 @@ void elf_decode(elf_utils_t *utils)
     if (!target_section)
         KILL("Could not find key section");
 
+    unsigned char *payload_addr = (unsigned char *)&target_section->sh_addr;
+
     key_offset = target_section->sh_offset;
     __log("Changing permissions and decoding data");
-    change_permissions((unsigned char *)&setup_payload, utils->s_len, true);
-    __xor((unsigned char *)&setup_payload, utils->s_len);
+    change_permissions(payload_addr, utils->s_len, true);
+    __xor(payload_addr, utils->s_len);
     __xor(utils->bin.content + utils->s_offset, utils->s_len);
-    change_permissions((unsigned char *)&setup_payload, utils->s_len, false);
+    change_permissions(payload_addr, utils->s_len, false);
 
     gen_key(utils->bin.content + key_offset, utils->s_len);
     __xor(utils->bin.content + utils->s_offset, utils->s_len);

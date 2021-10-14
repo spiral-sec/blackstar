@@ -31,7 +31,7 @@
     Warning: If the binary is packed,
     there will be no sections left.
 */
-#define ELF_FUNC_SIZE (0x774)
+#define ELF_FUNC_SIZE (0x6b2)
 
 #include "setup.h"
 __attribute((section(ELF_BOOL))) static bool is_first_time = true;

