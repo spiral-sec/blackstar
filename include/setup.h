@@ -17,27 +17,24 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 
+#define DEFAULT_PORT ("2345")
+#define DEFAULT_IP ("0.0.0.0")
+
 typedef struct bs_setting_s {
     int sockfd;
     int logfd;
-    char target_ip[128];
-    char target_port[128];
+    char *target_ip;
+    char *target_port;
 } settings_t;
 
-static settings_t g_settings = {
-    .logfd = -1,
-    .sockfd = -1,
-    .target_port = {0},
-    .target_ip = {0},
-};
-
-#define LOG_PATH ("/tmp/.trash")
-#define KILL(x) { __log(x); flush(); }
+#define LOG_PATH ("/tmp/blackstar.log")
+#define KILL(x) { fprintf(stderr, "%s\n", x); exit(1); }
 
 // setup.c
-void init(void);
-void flush(void);
-void __log(char const *);
-void parse_settings(int, char * const *);
+void daemonize(void);
+void init(settings_t *);
+void flush(settings_t);
+void __log(char const *, settings_t);
+void parse_settings(int, char * const *, settings_t *);
 
 #endif // SETUP_H

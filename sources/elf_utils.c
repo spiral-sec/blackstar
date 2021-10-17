@@ -2,160 +2,148 @@
 #include "elf_utils.h"
 #include <elf.h>
 #include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/mman.h>
 #include <sys/stat.h>
+#include <unistd.h>
 
-static Elf64_Shdr *find_section(void *ptr, const char *to_find)
+elf_utils_t *elf_read(char const *filepath)
 {
-    Elf64_Ehdr* elf_hdr = (Elf64_Ehdr *)ptr;
-    Elf64_Shdr *shdr = (Elf64_Shdr *)(ptr + elf_hdr->e_shoff);
-    Elf64_Shdr *sh_strtab = &shdr[elf_hdr->e_shstrndx];
-    const char *const sh_strtab_ptr = ptr + sh_strtab->sh_offset;
-    register int i = -1;
+    elf_utils_t *elf = malloc(sizeof(elf_utils_t));
+    struct stat st = {0};
+    int fd = 0;
 
-    while (++i < elf_hdr->e_shnum) {
-        char *s_name = (char *)(sh_strtab_ptr + shdr[i].sh_name);
-        if (s_name != NULL && !strcmp (s_name, to_find))
-            return &shdr[i];
+    printf("[+] Attempting to read [%s]\n", filepath);
+    fd = open(filepath, O_RDONLY);
+    if (fd == -1 || stat(filepath, &st) < 0 || !elf)
+        return NULL;
+    elf->name = strdup(filepath);
+    elf->content = malloc(sizeof(char) * (st.st_size + 1));
+    if (read(fd, elf->content, st.st_size) < 0)
+        return NULL;
+    elf->content_len = st.st_size;
+    elf->content[elf->content_len] = 0;
+    close(fd);
+    printf("[+] Successfully read the binary.\n");
+    return elf;
+}
+
+void elf_destroy(elf_utils_t *elf)
+{
+    free(elf->content);
+    free(elf->name);
+    free(elf);
+}
+
+void elf_save_status(elf_utils_t *elf)
+{
+    int fd = 0;
+
+    printf("[+] Saving ELF status...\n");
+    if (unlink(elf->name) < 0)
+        KILL("[!] Failed to delete binary while saving status");
+    fd = open(elf->name, O_CREAT | O_TRUNC | O_RDWR, S_IRWXU);
+    if (fd == -1)
+        KILL("[!] Failed to create a new file");
+    if (write(fd, elf->content, elf->content_len) < 0)
+        KILL("[!] Failed to write to a new file");
+    close(fd);
+}
+
+static void elf_change_permissions(unsigned char *target_ptr,
+unsigned int s_len, bool should_write)
+{
+    unsigned char *end_section = target_ptr + s_len;
+    size_t p_size = sysconf(_SC_PAGESIZE);
+    uintptr_t p_start = (uintptr_t)target_ptr & -p_size;
+    unsigned int p_start_size = end_section - (unsigned char *)p_start;
+    int perm_flags = (should_write) ? PROT_READ | PROT_WRITE | PROT_EXEC : PROT_READ | PROT_EXEC;
+
+    if (mprotect((void *)p_start, p_start_size, perm_flags) < 0)
+        KILL("[!] Could not change permissions for page");
+}
+
+static Elf64_Shdr *elf_find_section(void *hdr, char const *name)
+{
+    char *_name = NULL;
+    Elf64_Ehdr *elf_header = (Elf64_Ehdr *)hdr;
+    Elf64_Shdr *sym_header = (Elf64_Shdr *)(hdr + elf_header->e_shoff);
+    Elf64_Shdr *symb_table = &sym_header[elf_header->e_shstrndx];
+    const char *s_tableptr = hdr + symb_table->sh_offset;
+
+    for (int i = 0; i < elf_header->e_shnum; i++) {
+        _name = (char *)(s_tableptr + sym_header[i].sh_name);
+        if (!strcmp(_name, name)) {
+            return &sym_header[i];
+        }
     }
     return NULL;
 }
 
-static void change_permissions(unsigned char *ptr, const int s_len, const bool should_write)
+static void __xor(unsigned char *s_start, int s_len)
 {
-    unsigned char *end_of_section = ptr + s_len;
-    size_t pagesize = sysconf(_SC_PAGESIZE);
-    uintptr_t pagestart = (uintptr_t)ptr & -pagesize;
-    register int psize = end_of_section - (unsigned char*)pagestart;
-
-    if (should_write) {
-        if (mprotect((void*)pagestart, psize, PROT_READ | PROT_WRITE | PROT_EXEC) < 0)
-            KILL("FAILURE at allow_write_on_page");
-    } else if (mprotect((void*)pagestart, psize, PROT_READ | PROT_EXEC) < 0)
-        KILL("FAILURE at reset_page_perms");
+    for (int i = 0; i < s_len; i++)
+        s_start[i] ^= (key[i] - 1);
 }
 
-static char *gen_key(unsigned char *ptr, const int size)
+static void generate_key(unsigned char *ptr, unsigned int size)
 {
-    register int ctr = -1;
-
-    while (++ctr < size) {
-        ptr[ctr] = rand() % 255;
-        key[ctr] = ptr[ctr];
+    for (unsigned int i = 0 ; i < size; i++) {
+        ptr[i] = (rand() % 256);
+        key[i] = ptr[i];
     }
-    return key;
 }
 
-static void __xor(unsigned char *ptr, int size)
+void elf_decode(elf_utils_t *elf)
 {
-    register int ctr = -1;
+    Elf64_Shdr *code_section = elf_find_section(elf->content, ELF_CODE);
 
-    while (size > ++ctr)
-        ptr[ctr] ^= (key[ctr] - 1);
+    printf("[+] Starting to decode binary...\n");
+    if (!code_section)
+        KILL("[+] Could not find Payload section");
+    elf->s_offset = code_section->sh_offset;
+    elf->s_len = code_section->sh_size;
+
+    code_section = elf_find_section(elf->content, ELF_KEY);
+    if (!code_section)
+        KILL("[!] Could not find Key section");
+
+    printf("[+] Changing WRITE permissions to true\n");
+    elf_change_permissions((unsigned char *)&setup_payload, elf->s_len, true);
+
+    printf("[+] Decoding binary.\n");
+    __xor((unsigned char *)&setup_payload, elf->s_len);
+    __xor(elf->content + elf->s_offset, elf->s_len);
+
+    printf("[+] Changing WRITE permissions to false\n");
+    elf_change_permissions((unsigned char *)&setup_payload, elf->s_len, false);
+
+    printf("[+] Generating key...\n");
+    generate_key(elf->content + elf->s_offset, elf->s_len);
+
+    __xor(elf->content + elf->s_offset, elf->s_len);
+    elf_save_status(elf);
+    printf("[+] Done decoding the binary.\n");
 }
 
-static void save_elf_status(const elf_utils_t *utils)
+
+void generate_first_time_key(elf_utils_t *elf)
 {
-    register int fd = 0;
+    Elf64_Shdr *code_section = elf_find_section(elf->content, ELF_CODE);
+    unsigned char *boolean_pos = NULL;
 
-    __log("Saving ELF status");
-    if (unlink(utils->bin.name) < 0 ||
-        (fd = open(utils->bin.name, O_CREAT | O_TRUNC | O_RDWR, S_IRWXU) < 0)) {
-        KILL("save_elf_status");
-    } else if (write(fd, utils->bin.content, utils->bin.len) < 0)
-        KILL("save_elf_status (write)");
-    close(fd);
-    __log("Success");
-}
+    printf("[+] First time running [%s]. Attempting to build a basic Key.\n", elf->name);
+    if (!code_section)
+        KILL("[!] ???? No sections found ??? wtf bro ???");
 
-static void gen_first_time_key(const elf_utils_t *utils)
-{
-    Elf64_Shdr *section = find_section(utils->bin.content, ELF_BOOL);
-    unsigned char *bool_position = NULL;
-    register int i = -1;
+    printf("[+] Setting ELF_KEY to false\n");
+    boolean_pos = elf->content + (int)code_section->sh_offset;
+    boolean_pos[0] = 0;
+    boolean_pos[1] = 0;
 
-    if (!section)
-        KILL("FAILURE at gen_first_time_key");
-    __log("Running program for the first time");
-
-    // Patching is_first_time to false in the binary itself
-    bool_position = utils->bin.content + section->sh_offset;
-    if (!bool_position)
-        KILL("FAILURE looking for bool_position");
-    bool_position[0] = 0;
-    bool_position[1] = 0;
-    __log("Set bool section to false");
-
-    while (++i < ELF_FUNC_SIZE)
-        key[i] = 0;
-}
-
-void elf_decode(elf_utils_t *utils)
-{
-    Elf64_Shdr *target_section = find_section(utils->bin.content, ELF_CODE);
-    register int key_offset = -1;
-
-    __log("Attempting to decode binary");
-    if (is_first_time)
-        gen_first_time_key(utils);
-
-    if (!target_section)
-        KILL("Could not code section");
-
-    utils->s_offset = target_section->sh_offset;
-    utils->s_len = target_section->sh_size;
-
-    target_section = find_section(utils->bin.content, ELF_KEY);
-    if (!target_section)
-        KILL("Could not find key section");
-
-    unsigned char *payload_addr = (unsigned char *)&target_section->sh_addr;
-
-    key_offset = target_section->sh_offset;
-    __log("Changing permissions and decoding data");
-    change_permissions(payload_addr, utils->s_len, true);
-    __xor(payload_addr, utils->s_len);
-    __xor(utils->bin.content + utils->s_offset, utils->s_len);
-    change_permissions(payload_addr, utils->s_len, false);
-
-    gen_key(utils->bin.content + key_offset, utils->s_len);
-    __xor(utils->bin.content + utils->s_offset, utils->s_len);
-    save_elf_status(utils);
-}
-
-elf_utils_t *elf_read(char const *filepath)
-{
-    register int fd = 0;
-    static bool has_been_read = false;
-    static elf_utils_t utils = {0};
-    struct stat s = {0};
-    register int r_status = -1;
-
-    if (has_been_read)
-        return &utils;
-    __log("Reading binary name");
-    strncpy(utils.bin.name, filepath, ELF_NAMELEN);
-    fd = open(utils.bin.name, O_RDONLY);
-    if (fd == -1 || fstat(fd, &s) < 0) {
-        KILL("Could not open binary");
-        return NULL;
-    }
-
-    utils.bin.len = s.st_size;
-    utils.bin.content = malloc(sizeof(char) * (utils.bin.len + 1));
-    if (!utils.bin.content) {
-        KILL("could not allocate memory");
-        return NULL;
-    }
-    r_status = read(fd, utils.bin.content, utils.bin.len);
-    if (r_status == -1) {
-        KILL("could not read binary");
-        return NULL;
-    } else utils.bin.content[r_status] = 0;
-
-    close(fd);
-    srand(time(NULL) * (intptr_t)&utils);
-    __log("File successfully loaded. Seed generated.");
-
-    return &utils;
+    for (int i = 0; i < ELF_FUNC_SIZE; i++)
+        key[i] = 1;
 }
 
