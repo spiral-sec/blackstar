@@ -17,7 +17,7 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 
-#define DEFAULT_PORT ("23456")
+#define DEFAULT_PORT ("42069")
 #define DEFAULT_IP ("0.0.0.0")
 
 typedef struct bs_setting_s {
