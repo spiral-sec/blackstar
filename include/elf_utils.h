@@ -32,7 +32,7 @@ extern char **environ;
         size -d -A --radix=16 [binary]
     to get ELF_CODE's section size.
 */
-#define ELF_FUNC_SIZE (0x8b)
+#define ELF_FUNC_SIZE (146)
 
 #define SECTION(x) __attribute__((section(x)))
 

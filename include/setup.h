@@ -17,7 +17,7 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 
-#define DEFAULT_PORT ("2345")
+#define DEFAULT_PORT ("23456")
 #define DEFAULT_IP ("0.0.0.0")
 
 typedef struct bs_setting_s {
@@ -28,7 +28,7 @@ typedef struct bs_setting_s {
 } settings_t;
 
 #define LOG_PATH ("/tmp/blackstar.log")
-#define KILL(x) { fprintf(stderr, "%s\n", x); exit(1); }
+#define KILL(x) { fprintf(stderr, "%s\n\n", x); exit(1); }
 
 // setup.c
 void daemonize(void);

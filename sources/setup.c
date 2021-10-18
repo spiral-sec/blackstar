@@ -47,34 +47,10 @@ static bool debugger_is_attached(void)
 
 static void setup_log(settings_t *g_settings)
 {
-    g_settings->logfd = open(LOG_PATH, O_WRONLY | O_TRUNC | O_CREAT, S_IRUSR);
+    // FIXME delete file before creating it again
+
+    g_settings->logfd = open(LOG_PATH, O_RDWR | O_TRUNC | O_CREAT, S_IRUSR);
     printf("[+] Log file status:%d\n", g_settings->logfd);
-}
-
-static void setup_socket(settings_t *g_settings)
-{
-    int flag = 1;
-    struct sockaddr_in addr = {
-        .sin_family = AF_INET,
-        .sin_port = htons(atoi(g_settings->target_ip)),
-        .sin_addr.s_addr = inet_addr(g_settings->target_port)
-    };
-
-    printf("[+] Initiating connection...\n");
-    g_settings->sockfd = socket(AF_INET, SOCK_STREAM, 0);
-    if (g_settings->sockfd == -1) {
-        printf("[!] Failure to build socket: %s\n", strerror(errno));
-        return;
-    } else if (setsockopt(g_settings->sockfd, SOL_SOCKET,
-        SO_REUSEADDR | SO_REUSEPORT, &flag, sizeof(int)) < 0) {
-        printf("[!] Failure to set socket options: %s\n", strerror(errno));
-        return;
-    } else if (connect(g_settings->sockfd, (struct sockaddr *)&addr, sizeof(addr)) < 0) {
-        printf("[!] Failure to connect: %s\n", strerror(errno));
-        return;
-    }
-    printf("[+] Connected!\n");
-    __log("online", *g_settings);
 }
 
 void daemonize(void)
@@ -116,7 +92,6 @@ void init(settings_t *g_settings)
     srand(time(NULL) * (intptr_t)g_settings);
 
     setup_log(g_settings);
-    setup_socket(g_settings);
 }
 
 void parse_settings(int ac, char *const *av, settings_t *g_settings)
