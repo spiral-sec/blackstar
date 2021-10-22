@@ -1,6 +1,7 @@
 
 #include "crypter.h"
 #include <fcntl.h>
+#include <stdint.h>
 #include <unistd.h>
 #include <sys/stat.h>
 #include <string.h>
@@ -12,7 +13,6 @@ void *get_memory_map(crypter_t c)
     struct stat st;
     void *result = NULL;
 
-    c.fd = open(c.target_binary, O_RDWR | O_APPEND, 0);
     if (c.fd < 0 || stat(c.target_binary, &st) < 0)
         return NULL;
 
@@ -21,12 +21,11 @@ void *get_memory_map(crypter_t c)
     return result;
 }
 
-void __xor(unsigned char *mem, char *key)
+void __xor(unsigned char *mem, size_t size, char *key)
 {
-    int size = strlen((char *)mem);
     int key_len = strlen(key);
 
-    for (int i = 0; i < size; i++)
+    for (unsigned int i = 0; i < size; i++)
         *(mem + i) ^= *(key + (i % key_len));
 }
 
@@ -47,4 +46,36 @@ static Elf64_Shdr *elf_find_section(void *hdr, char const *name)
     return NULL;
 }
 
+void decrypt(unsigned char *ptr, unsigned char *ptr2, char *key)
+{
+    size_t pagesize = sysconf(_SC_PAGESIZE);
+    uintptr_t pagestart = (uintptr_t)ptr & -pagesize;
+    int psize = (ptr2 - (unsigned char *)ptr);
 
+    if (mprotect((void *)pagestart, psize,
+    PROT_READ | PROT_WRITE | PROT_EXEC) < 0)
+        perror("mprotect:");
+    __xor(ptr, ptr - ptr2, key);
+}
+
+static void xor_section(void *data, Elf64_Shdr *shdr, char *key)
+{
+    unsigned char *ch = (unsigned char *)data;
+    int offset = shdr->sh_offset;
+    int size = shdr->sh_size;
+
+    ch += offset;
+    __xor(ch, size, key);
+}
+
+void encrypt(crypter_t c)
+{
+    void *data = NULL;
+    Elf64_Shdr *shdr = NULL;
+
+    if (c.fd == -1)
+        return;
+    data = get_memory_map(c);
+    shdr = elf_find_section(data, c.target_section_name);
+    xor_section(data, shdr, c.key);
+}
