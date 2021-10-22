@@ -145,10 +145,8 @@ void generate_first_time_key(elf_utils_t *elf)
 
     boolean_pos = elf->content + (int)bool_section->sh_offset;
     printf("\t-== Setting ELF_KEY to false at addr %p ==-\n", boolean_pos);
-    boolean_pos[0] = 0;
-    boolean_pos[1] = 0;
-    boolean_pos[2] = 0;
-    boolean_pos[3] = 0;
+    for (int i = 0; i < 4; i++)
+        boolean_pos[i] = 0;
 
     elf_save_status(elf);
     elf_destroy(elf);
