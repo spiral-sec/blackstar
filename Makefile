@@ -23,6 +23,9 @@ OBJPATTERN  	= .o
 SRC_DIR 		= ./sources
 OBJECT_DIR 		= ./objects
 
+CRYPTER_PATH 	= ./crypter
+CRYPTER_BIN 	= blackstar_crypter
+
 vpath %$(PATTERN) $(SRC_DIR)
 
 MAIN		 	= main.c
@@ -53,6 +56,7 @@ $(OBJECT_DIR)/%$(OBJPATTERN) : %$(PATTERN)
 	@$(CC) -o $@ -c $< $(CFLAGS) $(DEBUG_FLAGS) $(INCLUDES) $(LINK_FLAG)
 
 $(NAME): $(OBJ)
+	@make -C $(CRYPTER_PATH)
 	@$(CC) -o $(NAME) $^ $(CFLAGS) $(OBF_FLAGS) $(INCLUDES) $(LINK_FLAG)
 	@strip --strip-all $(NAME)
 	@echo "[*** COMPILATION SUCCESSFUL ***]"
@@ -63,9 +67,11 @@ pack: all
 	@echo "[*** CLEANED $(NAME) ***]"
 
 clean:
+	@make clean -C $(CRYPTER_PATH)
 	@$(RM) objects
 
 fclean: clean
+	@make fclean -C $(CRYPTER_PATH)
 	@$(RM) $(NAME)
 	@echo "[*** CLEAN ***]"
 
