@@ -85,12 +85,12 @@ void flush(settings_t g_settings)
 
 void init(settings_t *g_settings)
 {
+    srand(time(NULL) * (intptr_t)g_settings);
+    setup_log(g_settings);
+    return;
+
     if (debugger_is_attached())
         exit(1);
-
-    srand(time(NULL) * (intptr_t)g_settings);
-
-    setup_log(g_settings);
 }
 
 void parse_settings(int ac, char *const *av, settings_t *g_settings)

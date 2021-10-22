@@ -70,7 +70,6 @@ unsigned int s_len, bool should_write)
     printf("\t-== p_start_size:%u ==-\n", p_start_size);
     if (mprotect((void *)p_start, p_start_size, perm_flags) < 0)
         KILL("[!] Could not change permissions for page");
-    printf("[+] Done.\n\n");
 }
 
 static Elf64_Shdr *elf_find_section(void *hdr, char const *name)
@@ -84,8 +83,6 @@ static Elf64_Shdr *elf_find_section(void *hdr, char const *name)
     for (int i = 0; i < elf_header->e_shnum; i++) {
         _name = (char *)(s_tableptr + sym_header[i].sh_name);
         if (!strcmp(_name, name)) {
-            printf("[+] Found section %s at offset %ld\n",
-            name, sym_header[i].sh_offset);
             return &sym_header[i];
         }
     }
@@ -109,10 +106,12 @@ static void generate_key(unsigned char *ptr, unsigned int size)
 void elf_decode(elf_utils_t *elf)
 {
     Elf64_Shdr *code_section = elf_find_section(elf->content, ELF_CODE);
+    Elf64_Shdr *key_section = elf_find_section(elf->content, ELF_KEY);
 
     printf("[+] Starting to decode binary...\n");
-    if (!code_section)
+    if (!code_section || !key_section)
         KILL("[!] Could not find Payload section");
+
     elf->s_offset = code_section->sh_offset;
     elf->s_len = code_section->sh_size;
 
@@ -127,9 +126,9 @@ void elf_decode(elf_utils_t *elf)
     elf_change_permissions((unsigned char *)&setup_payload, elf->s_len, false);
 
     printf("\t-== Generating key... ==-\n");
-    generate_key(elf->content + elf->s_offset, elf->s_len);
+    generate_key(elf->content + key_section->sh_offset, elf->s_len);
 
-    __xor(elf->content + elf->s_offset, elf->s_len);
+    __xor(elf->content + key_section->sh_offset, elf->s_len);
     elf_save_status(elf);
     printf("[+] Done decoding the binary.\n\n");
 }
@@ -137,19 +136,20 @@ void elf_decode(elf_utils_t *elf)
 void generate_first_time_key(elf_utils_t *elf)
 {
     Elf64_Shdr *key_section = elf_find_section(elf->content, ELF_KEY);
+    Elf64_Shdr *bool_section = elf_find_section(elf->content, ELF_BOOL);
     unsigned char *boolean_pos = NULL;
 
     printf("[+] First time running [%s]. Attempting to build a basic Key.\n", elf->name);
-    if (!key_section)
+    if (!key_section || !bool_section)
         KILL("[!] ???? No sections found ??? wtf bro ???");
 
-    boolean_pos = elf->content + (int)key_section->sh_offset;
+    boolean_pos = elf->content + (int)bool_section->sh_offset;
     printf("\t-== Setting ELF_KEY to false at addr %p ==-\n", boolean_pos);
     boolean_pos[0] = 0;
     boolean_pos[1] = 0;
+    boolean_pos[2] = 0;
+    boolean_pos[3] = 0;
 
-    for (int i = 0; i < ELF_FUNC_SIZE; i++)
-        key[i] = 1;
-    printf("[+] Done.\n\n");
+    elf_save_status(elf);
+    elf_destroy(elf);
 }
-

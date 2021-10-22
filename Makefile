@@ -8,15 +8,15 @@ RM			 	= rm -rf
 
 INCLUDES 	 	= -I./include/
 LINK_FLAG    	=
-CFLAGS 		 	= -g3 -Wall -Wextra -fPIC -Wshadow -Wdouble-promotion \
+CFLAGS 		 	= -Wall -Wextra -fPIC -Wshadow -Wdouble-promotion \
 				  -Wformat=2 -Wformat-truncation=2 -Wundef -fno-common \
 				  -Wfloat-equal -Wcast-align -Wstrict-prototypes \
 				  -Wstrict-overflow=5 -Wwrite-strings -Waggregate-return \
 				  -Wunreachable-code -Wstack-usage=15000 \
-				  -Wno-stringop-truncation -Wno-strict-overflow -Wno-discarded-qualifiers \
-				  -Wno-unused-variable
+				  -Wno-stringop-truncation -Wno-strict-overflow \
+				  -Wno-discarded-qualifiers -Wno-unused-variable
 PROD_FLAGS 		= -static -s -O2
-DEBUG_FLAGS 	= -g3
+DEBUG_FLAGS 	= -g3 -g
 
 PATTERN 	 	= .c
 OBJPATTERN  	= .o
