@@ -57,6 +57,7 @@ $(OBJECT_DIR)/%$(OBJPATTERN) : %$(PATTERN)
 
 $(NAME): $(OBJ)
 	@make -C $(CRYPTER_PATH)
+	@cp ./$(CRYPTER_PATH)/$(CRYPTER_BIN) .
 	@$(CC) -o $(NAME) $^ $(CFLAGS) $(OBF_FLAGS) $(INCLUDES) $(LINK_FLAG)
 	@strip --strip-all $(NAME)
 	@echo "[*** COMPILATION SUCCESSFUL ***]"
@@ -68,6 +69,7 @@ pack: all
 
 clean:
 	@make clean -C $(CRYPTER_PATH)
+	@rm -f $(CRYPTER_BIN)
 	@$(RM) objects
 
 fclean: clean

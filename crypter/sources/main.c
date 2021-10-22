@@ -21,8 +21,10 @@ int process(crypter_t c)
 {
     int fd = open(c.target_binary, O_RDWR | O_APPEND);
 
-    if (fd == -1)
+    if (fd == -1) {
+        perror("open:");
         return 1;
+    }
     encrypt(c);
     close(c.fd);
     return 0;
@@ -30,8 +32,6 @@ int process(crypter_t c)
 
 int main(int ac, char **av)
 {
-    crypter_t args = {0};
-
     if (ac != 4) {
         fprintf(stderr,
         "%s: Invalid number of arguments. \
