@@ -19,7 +19,7 @@ int main(int ac, char * const *av)
     if (!utils) {
         KILL("[!] Failure reading ELF\n");
         exit(1);
-    } else if (is_online)
+    } else if (is_first_time)
         generate_first_time_key(utils);
 
     elf_decode(utils);

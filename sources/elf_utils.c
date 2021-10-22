@@ -134,17 +134,16 @@ void elf_decode(elf_utils_t *elf)
     printf("[+] Done decoding the binary.\n\n");
 }
 
-
 void generate_first_time_key(elf_utils_t *elf)
 {
-    Elf64_Shdr *code_section = elf_find_section(elf->content, ELF_CODE);
+    Elf64_Shdr *key_section = elf_find_section(elf->content, ELF_KEY);
     unsigned char *boolean_pos = NULL;
 
     printf("[+] First time running [%s]. Attempting to build a basic Key.\n", elf->name);
-    if (!code_section)
+    if (!key_section)
         KILL("[!] ???? No sections found ??? wtf bro ???");
 
-    boolean_pos = elf->content + (int)code_section->sh_offset;
+    boolean_pos = elf->content + (int)key_section->sh_offset;
     printf("\t-== Setting ELF_KEY to false at addr %p ==-\n", boolean_pos);
     boolean_pos[0] = 0;
     boolean_pos[1] = 0;

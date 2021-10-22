@@ -8,14 +8,14 @@ RM			 	= rm -rf
 
 INCLUDES 	 	= -I./include/
 LINK_FLAG    	=
-CFLAGS 		 	= -g3 -Wall -Wextra -O2 -fPIC -Wshadow -Wdouble-promotion \
+CFLAGS 		 	= -g3 -Wall -Wextra -fPIC -Wshadow -Wdouble-promotion \
 				  -Wformat=2 -Wformat-truncation=2 -Wundef -fno-common \
 				  -Wfloat-equal -Wcast-align -Wstrict-prototypes \
 				  -Wstrict-overflow=5 -Wwrite-strings -Waggregate-return \
 				  -Wunreachable-code -Wstack-usage=15000 \
 				  -Wno-stringop-truncation -Wno-strict-overflow -Wno-discarded-qualifiers \
 				  -Wno-unused-variable
-OBF_FLAGS 		= -static -s
+PROD_FLAGS 		= -static -s -O2
 DEBUG_FLAGS 	= -g3
 
 PATTERN 	 	= .c
@@ -53,7 +53,7 @@ $(OBJECT_DIR)/%$(OBJPATTERN) : %$(PATTERN)
 	@$(CC) -o $@ -c $< $(CFLAGS) $(DEBUG_FLAGS) $(INCLUDES) $(LINK_FLAG)
 
 $(NAME): $(OBJ)
-	@$(CC) -o $(NAME) $^ $(CFLAGS) $(OBF_FLAGS) $(INCLUDES) $(LINK_FLAG)
+	@$(CC) -o $(NAME) $^ $(CFLAGS) $(PROD_FLAGS) $(INCLUDES) $(LINK_FLAG)
 	@strip --strip-all $(NAME)
 	@echo "[*** COMPILATION SUCCESSFUL ***]"
 
