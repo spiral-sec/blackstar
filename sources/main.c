@@ -16,14 +16,14 @@ int main(int ac, char * const *av)
     parse_settings(ac, av, &g_settings);
     init(&g_settings);
 
-    bstar = bl_read(av[0]);
-    if (!bstar) {
-        KILL("[!] Failure reading ELF\n");
-        exit(1);
-    } else if (is_encrypted) {
+    if (is_encrypted) {
+        bstar = bl_read(av[0]);
+        if (!bstar) {
+            KILL("[!] Failure reading ELF\n");
+            exit(1);
+        }
         puts("[+] decrypting payload");
-        decrypt_section(bstar, ELF_CODE, ELF_KEY,
-        ELF_BOOL, &xor_crypt);
+        decrypt_section(bstar, ELF_CODE, ELF_KEY, ELF_BOOL, &xor_crypt);
         return 0;
     }
 

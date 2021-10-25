@@ -49,7 +49,6 @@ static void setup_log(settings_t *g_settings)
 {
     remove(LOG_PATH);
     g_settings->logfd = open(LOG_PATH, O_RDWR | O_TRUNC | O_CREAT, S_IRUSR);
-    printf("[+] Log file status:%d\n", g_settings->logfd);
 }
 
 void daemonize(void)

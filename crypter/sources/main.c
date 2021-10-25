@@ -16,5 +16,6 @@ int main(int ac, char **av)
     if (!bstar)
         return 1;
     bl_encrypt_section(bstar, av[2], av[3], av[4], &xor_crypt, av[1]);
+    bl_destroy(bstar);
     return 0;
 }
