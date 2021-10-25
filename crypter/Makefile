@@ -6,7 +6,7 @@ NAME		 	= blackstar_crypter
 CC			 	= gcc
 RM			 	= rm -rf
 
-INCLUDES 	 	= -I./include/
+INCLUDES 	 	=
 LINK_FLAG    	= -L ../ -lstar
 
 DEBUG_FLAGS 	= -g3 -g
@@ -15,7 +15,7 @@ CFLAGS 		 	= -Wall -Wextra -fPIC -Wshadow $(DEBUG_FLAGS) # -O2
 
 PATTERN 	 	= .c
 OBJPATTERN  	= .o
-SRC_DIR 		= ./sources
+SRC_DIR 		= ./
 OBJECT_DIR 		= ./objects
 
 LIB_PATH 		= ../lib/star
@@ -42,7 +42,7 @@ directories: | $(OBJECT_DIR)
 
 $(OBJECT_DIR)/%$(OBJPATTERN) : %$(PATTERN)
 	@make --no-print-directory  -C $(LIB_PATH) >/dev/null
-	@cp ../include/$(LIB_HEADER) ./include/.
+	@cp ../include/$(LIB_HEADER) ./
 	@echo "Compiling $@"
 	@$(CC) -o $@ -c $< $(CFLAGS) $(DEBUG_FLAGS) $(INCLUDES) $(LINK_FLAG)
 
