@@ -91,8 +91,10 @@ static Elf64_Shdr *elf_find_section(void *hdr, char const *name)
 
 static void __xor(unsigned char *s_start, int s_len)
 {
+    int key_len = strlen(key);
+
     for (int i = 0; i < s_len; i++)
-        s_start[i] ^= (key[i] - 1);
+        s_start[i] ^= (key[i % key_len]);
 }
 
 static void generate_key(unsigned char *ptr, unsigned int size)

@@ -1,6 +1,7 @@
 
 #include "crypter.h"
 #include <fcntl.h>
+#include <stddef.h>
 #include <stdint.h>
 #include <unistd.h>
 #include <sys/stat.h>
@@ -9,13 +10,14 @@
 #include <stdlib.h>
 #include <elf.h>
 
-unsigned char *get_memory_map(crypter_t c)
+static unsigned char *get_memory_map(crypter_t c, size_t *size)
 {
     struct stat st;
     unsigned char *result = NULL;
 
     if (c.fd < 0 || stat(c.target_binary, &st) < 0)
         return NULL;
+    *size = st.st_size;
     result = malloc(sizeof(unsigned char) * (st.st_size + 1));
     if (!result || read(c.fd, result, st.st_size) < 0)
         return NULL;
@@ -27,7 +29,7 @@ void __xor(unsigned char *mem, size_t size, char *key)
     int key_len = strlen(key);
 
     for (unsigned int i = 0; i < size; i++)
-        *(mem + i) ^= *(key + (i % key_len));
+        mem[i] ^= key[i % key_len];
 }
 
 static Elf64_Shdr *elf_find_section(void *hdr, char const *name)
@@ -47,18 +49,6 @@ static Elf64_Shdr *elf_find_section(void *hdr, char const *name)
     return NULL;
 }
 
-void decrypt(unsigned char *ptr, unsigned char *ptr2, char *key)
-{
-    size_t pagesize = sysconf(_SC_PAGESIZE);
-    uintptr_t pagestart = (uintptr_t)ptr & -pagesize;
-    int psize = (ptr2 - (unsigned char *)ptr);
-
-    if (mprotect((void *)pagestart, psize,
-    PROT_READ | PROT_WRITE | PROT_EXEC) < 0)
-        perror("mprotect:");
-    __xor(ptr, ptr - ptr2, key);
-}
-
 static void xor_section(void *data, Elf64_Shdr *shdr, char *key)
 {
     unsigned char *ch = (unsigned char *)data;
@@ -69,14 +59,42 @@ static void xor_section(void *data, Elf64_Shdr *shdr, char *key)
     __xor(ch, size, key);
 }
 
+static void set_section_key(unsigned char *data, char *key, char *key_sname)
+{
+    Elf64_Shdr *shdr = elf_find_section(data, key_sname);
+    unsigned char *ch = data + shdr->sh_offset;
+
+    for (unsigned int i = 0; i < shdr->sh_size; i++)
+        ch[i] = key[i];
+}
+
+static void save_elf_status(unsigned char *data, char *bin_name, size_t size)
+{
+    int fd = 0;
+
+    if (unlink(bin_name) < 0)
+        return;
+    fd = open(bin_name, O_CREAT | O_TRUNC | O_RDWR, S_IRWXU);
+    if (fd == -1)
+        return;
+    if (write(fd, data, size) < 0)
+        return;
+}
+
 void encrypt(crypter_t c)
 {
     unsigned char *data = NULL;
     Elf64_Shdr *shdr = NULL;
+    size_t size = 0;
 
     if (c.fd == -1)
         return;
-    data = get_memory_map(c);
+    data = get_memory_map(c, &size);
     shdr = elf_find_section(data, c.target_section_name);
     xor_section(data, shdr, c.key);
+
+    // once this is correctly set, we will need to set the boolean thingy to true
+    set_section_key(data, c.key, c.key_section_name);
+    close(c.fd);
+    save_elf_status(data, c.target_binary, size);
 }

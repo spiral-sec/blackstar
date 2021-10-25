@@ -10,13 +10,11 @@ typedef struct crypter_args {
 
     char *key;
     char *target_section_name;
+    char *key_section_name;
 } crypter_t;
 
-
 // crypt.c
-unsigned char *get_memory_map(crypter_t);
 void __xor(unsigned char *, size_t, char *);
-void decrypt(unsigned char *, unsigned char *, char *);
 void encrypt(crypter_t);
 
 #endif /* CRYPTER_H  */
