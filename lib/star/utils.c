@@ -21,10 +21,11 @@ blackstar_t *bl_read(char const *filepath)
         return NULL;
     bstar->path = strdup(filepath);
     bstar->content_len = st.st_size;
-    bstar->content = malloc(sizeof(unsigned char *) * (st.st_size));
+    bstar->content = malloc(sizeof(unsigned char *) * (st.st_size + 1));
+    if (!bstar->content || read(fd, bstar->content, st.st_size) < 0)
+        return NULL;
+    bstar->content[st.st_size] = 0;
     close(fd);
-    if (!bstar->content || read(fd, bstar->content, st.st_size < 0))
-       return NULL;
     return bstar;
 }
 
@@ -42,26 +43,24 @@ int bl_sync(blackstar_t *bstar)
     if (!bstar || !bstar->path || unlink(bstar->path) < 0)
         return 1;
     fd = open(bstar->path, O_CREAT | O_TRUNC | O_RDWR, S_IRWXU);
-    if (fd == -1 || !bstar->content)
-        return 1;
-    if (write(fd, bstar->content, bstar->content_len) < 0)
+    if (fd == -1 || !bstar->content || write(fd, bstar->content,
+                bstar->content_len) < 0)
         return 1;
     close(fd);
     return 0;
 }
 
-Elf64_Shdr *bl_find_section(blackstar_t *bstar, char const *target_section)
+Elf64_Shdr *bl_find_section(void *hdr, char const *name)
 {
-    char *tmp = NULL;
-    Elf64_Ehdr *elf_header = (Elf64_Ehdr *)bstar->content;
-    Elf64_Shdr *sym_header = (Elf64_Shdr *)(elf_header + elf_header->e_shoff);
+    char *_name = NULL;
+    Elf64_Ehdr *elf_header = (Elf64_Ehdr *)hdr;
+    Elf64_Shdr *sym_header = (Elf64_Shdr *)(hdr + elf_header->e_shoff);
     Elf64_Shdr *symb_table = &sym_header[elf_header->e_shstrndx];
-    const unsigned char *s_tableptr = bstar->content +
-    symb_table->sh_offset;
+    const char *s_tableptr = hdr + symb_table->sh_offset;
 
     for (int i = 0; i < elf_header->e_shnum; i++) {
-        tmp = (char *)(s_tableptr + sym_header[i].sh_name);
-        if (!strcmp(tmp, target_section)) {
+        _name = (char *)(s_tableptr + sym_header[i].sh_name);
+        if (!strcmp(_name, name)) {
             return &sym_header[i];
         }
     }

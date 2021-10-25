@@ -31,6 +31,6 @@ const char *, crypter_t, char *);
 blackstar_t *bl_read(char const *);
 void bl_destroy(blackstar_t *);
 int bl_sync(blackstar_t *);
-Elf64_Shdr *bl_find_section(blackstar_t *, char const *);
+Elf64_Shdr *bl_find_section(void *, char const *);
 
 #endif

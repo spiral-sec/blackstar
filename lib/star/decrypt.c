@@ -29,9 +29,9 @@ char *gen_new_key(time_t seed)
 int decrypt_section(blackstar_t *bstar, const char *code_sname,
 const char *key_sname, const char *bool_sname, crypter_t crypter)
 {
-    Elf64_Shdr *code_section = bl_find_section(bstar, code_sname);
-    Elf64_Shdr *bool_section = bl_find_section(bstar, bool_sname);
-    Elf64_Shdr *key_section = bl_find_section(bstar, key_sname);
+    Elf64_Shdr *code_section = bl_find_section(bstar->content, code_sname);
+    Elf64_Shdr *bool_section = bl_find_section(bstar->content, bool_sname);
+    Elf64_Shdr *key_section = bl_find_section(bstar->content, key_sname);
     size_t code_len = 0;
     unsigned char *ptr = NULL;
     char *key = NULL;

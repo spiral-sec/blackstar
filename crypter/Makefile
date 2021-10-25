@@ -7,7 +7,7 @@ CC			 	= gcc
 RM			 	= rm -rf
 
 INCLUDES 	 	= -I./include/
-LINK_FLAG    	=
+LINK_FLAG    	= -L ../ -lstar
 
 DEBUG_FLAGS 	= -g3 -g
 CFLAGS 		 	= -Wall -Wextra -fPIC -Wshadow $(DEBUG_FLAGS) # -O2
@@ -18,10 +18,13 @@ OBJPATTERN  	= .o
 SRC_DIR 		= ./sources
 OBJECT_DIR 		= ./objects
 
+LIB_PATH 		= ../lib/star
+LIB_HEADER 		= blackstar.h
+
 vpath %$(PATTERN) $(SRC_DIR)
 
 MAIN		 	= main.c
-SRC 		 	= crypt.c
+SRC 		 	=
 
 ########################
 #### COMPILATION #######
@@ -32,18 +35,14 @@ OBJ 	 		= $(patsubst %$(PATTERN), $(OBJECT_DIR)/%$(OBJPATTERN), $(COMBINED))
 
 all: directories $(NAME)
 
-debug: directories dbg
-
-dbg: $(OBJ)
-	@$(CC) -o $(NAME) $^ $(CFLAGS) $(DEBUG_FLAGS) $(INCLUDES) $(LINK_FLAG)
-	@echo "[*** COMPILATION SUCCESSFUL ## DEBUG MODE ***]"
-
 $(OBJECT_DIR):
 	@mkdir -p $@
 
 directories: | $(OBJECT_DIR)
 
 $(OBJECT_DIR)/%$(OBJPATTERN) : %$(PATTERN)
+	@make --no-print-directory  -C $(LIB_PATH) >/dev/null
+	@cp ../include/$(LIB_HEADER) ./include/.
 	@echo "Compiling $@"
 	@$(CC) -o $@ -c $< $(CFLAGS) $(DEBUG_FLAGS) $(INCLUDES) $(LINK_FLAG)
 
@@ -56,6 +55,7 @@ clean:
 
 fclean: clean
 	@$(RM) $(NAME)
+	@$(RM) include/$(LIB_HEADER)
 	@echo "[*** CRYPTER: CLEAN ***]"
 
 re: fclean all

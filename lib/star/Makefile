@@ -52,7 +52,7 @@ $(NAME): $(OBJ)
 	@cp $(HEADER) ../../include
 	@$(AR) $(NAME) $(OBJ)
 	@cp $(NAME) ../../
-	@echo "[*** COMPILATION SUCCESSFUL ***]"
+	@echo "[*** LIB: COMPILATION SUCCESSFUL ***]"
 
 clean:
 	@$(RM) objects
@@ -61,7 +61,7 @@ fclean: clean
 	@$(RM) ../../include/$(HEADER)
 	@$(RM) ../../$(NAME)
 	@$(RM) $(NAME)
-	@echo "[*** CLEAN ***]"
+	@echo "[*** LIB: CLEAN ***]"
 
 re: fclean all
 

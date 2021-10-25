@@ -36,24 +36,8 @@ extern char **environ;
 
 #define SECTION(x) __attribute__((section(x)))
 
-static SECTION(ELF_BOOL) bool is_first_time = true;
+static SECTION(ELF_BOOL) bool is_encrypted = true;
 static SECTION(ELF_KEY) char key[ELF_FUNC_SIZE];
-
-typedef struct utl_s {
-    int s_offset;
-    int s_len;
-
-    char *name;
-    unsigned int content_len;
-    unsigned char *content;
-} elf_utils_t;
-
-// elf_utils.c
-void elf_save_status(elf_utils_t *);
-void elf_destroy(elf_utils_t *);
-elf_utils_t *elf_read(char const *);
-void elf_decode(elf_utils_t *);
-void generate_first_time_key(elf_utils_t *);
 
 // payload.c
 void setup_payload(settings_t *);
