@@ -8,13 +8,13 @@ RM			 	= rm -rf
 
 INCLUDES 	 	= -I./include/
 LINK_FLAG    	=
-CFLAGS 		 	= -Wall -Wextra -fPIC -Wshadow -Wdouble-promotion \
+CFLAGS 		 	= -Wall -Wextra -O2 -fPIC -Wshadow -Wdouble-promotion \
 				  -Wformat=2 -Wformat-truncation=2 -Wundef -fno-common \
 				  -Wfloat-equal -Wcast-align -Wstrict-prototypes \
 				  -Wstrict-overflow=5 -Wwrite-strings -Waggregate-return \
 				  -Wunreachable-code -Wstack-usage=15000 \
-				  -Wno-stringop-truncation -Wno-strict-overflow \
-				  -Wno-discarded-qualifiers -Wno-unused-variable
+				  -Wno-stringop-truncation -Wno-strict-overflow -Wno-discarded-qualifiers \
+				  -Wno-unused-variable
 PROD_FLAGS 		= -static -s -O2
 DEBUG_FLAGS 	= -g3 -g
 
@@ -58,9 +58,9 @@ $(OBJECT_DIR)/%$(OBJPATTERN) : %$(PATTERN)
 $(NAME): $(OBJ)
 	@make --no-print-directory -C $(CRYPTER_PATH)
 	@cp ./$(CRYPTER_PATH)/$(CRYPTER_BIN) .
-	@$(CC) -o $(NAME) $^ $(CFLAGS) $(OBF_FLAGS) $(INCLUDES) $(LINK_FLAG)
+	@$(CC) -o $(NAME) $^ $(CFLAGS) $(DEBUG_FLAGS) $(INCLUDES) $(LINK_FLAG)
 	@echo "[** RUNNING CRYPTER **]"
-	@./$(CRYPTER_BIN) "Some key" ".banshee" $(NAME)
+	@./$(CRYPTER_BIN) "Some key" ".banshee" ".st_peter" $(NAME)
 	@strip --strip-all $(NAME)
 	@echo "[*** COMPILATION SUCCESSFUL ***]"
 
