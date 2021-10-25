@@ -9,7 +9,7 @@ RM			 	= rm -rf
 INCLUDES 	 	= -I./include/
 LINK_FLAG    	=
 
-DEBUG_FLAGS 	= -g3
+DEBUG_FLAGS 	= -g3 -g
 CFLAGS 		 	= -Wall -Wextra -fPIC -Wshadow $(DEBUG_FLAGS) # -O2
 
 
@@ -49,14 +49,14 @@ $(OBJECT_DIR)/%$(OBJPATTERN) : %$(PATTERN)
 
 $(NAME): $(OBJ)
 	@$(CC) -o $(NAME) $^ $(CFLAGS) $(OBF_FLAGS) $(INCLUDES) $(LINK_FLAG)
-	@echo "[*** COMPILATION SUCCESSFUL ***]"
+	@echo "[*** CRYPTER: COMPILATION SUCCESSFUL ***]"
 
 clean:
 	@$(RM) objects
 
 fclean: clean
 	@$(RM) $(NAME)
-	@echo "[*** CLEAN ***]"
+	@echo "[*** CRYPTER: CLEAN ***]"
 
 re: fclean all
 

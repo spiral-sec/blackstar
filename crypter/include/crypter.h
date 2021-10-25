@@ -14,7 +14,7 @@ typedef struct crypter_args {
 
 
 // crypt.c
-void *get_memory_map(crypter_t);
+unsigned char *get_memory_map(crypter_t);
 void __xor(unsigned char *, size_t, char *);
 void decrypt(unsigned char *, unsigned char *, char *);
 void encrypt(crypter_t);

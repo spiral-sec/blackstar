@@ -19,9 +19,8 @@ static crypter_t parse_args(char **av)
 
 int process(crypter_t c)
 {
-    int fd = open(c.target_binary, O_RDWR | O_APPEND);
-
-    if (fd == -1) {
+    c.fd = open(c.target_binary, O_RDWR | O_APPEND);
+    if (c.fd == -1) {
         perror("open:");
         return 1;
     }

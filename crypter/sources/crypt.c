@@ -6,18 +6,19 @@
 #include <sys/stat.h>
 #include <string.h>
 #include <sys/mman.h>
+#include <stdlib.h>
 #include <elf.h>
 
-void *get_memory_map(crypter_t c)
+unsigned char *get_memory_map(crypter_t c)
 {
     struct stat st;
-    void *result = NULL;
+    unsigned char *result = NULL;
 
     if (c.fd < 0 || stat(c.target_binary, &st) < 0)
         return NULL;
-
-    result = mmap(0, st.st_size, PROT_READ | PROT_WRITE | PROT_EXEC,
-    MAP_SHARED, c.fd, 0);
+    result = malloc(sizeof(unsigned char) * (st.st_size + 1));
+    if (!result || read(c.fd, result, st.st_size) < 0)
+        return NULL;
     return result;
 }
 
@@ -70,7 +71,7 @@ static void xor_section(void *data, Elf64_Shdr *shdr, char *key)
 
 void encrypt(crypter_t c)
 {
-    void *data = NULL;
+    unsigned char *data = NULL;
     Elf64_Shdr *shdr = NULL;
 
     if (c.fd == -1)
