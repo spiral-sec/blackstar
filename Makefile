@@ -59,8 +59,8 @@ $(NAME): $(OBJ)
 	@make --no-print-directory -C $(CRYPTER_PATH)
 	@cp ./$(CRYPTER_PATH)/$(CRYPTER_BIN) .
 	@$(CC) -o $(NAME) $^ $(CFLAGS) $(DEBUG_FLAGS) $(INCLUDES) $(LINK_FLAG)
-	@echo "[** RUNNING CRYPTER **]"
-	@./$(CRYPTER_BIN) "Some key" ".banshee" ".st_peter" $(NAME)
+	@echo "[ ** RUNNING CRYPTER **]"
+	@./$(CRYPTER_BIN) $$(./scripts/generate_random_key.sh) ".banshee" ".st_peter" $(NAME)
 	@echo "[*** COMPILATION SUCCESSFUL ***]"
 
 clean:
