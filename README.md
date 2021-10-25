@@ -52,7 +52,7 @@ make fclean
 Yes, you can ! But you will need to change the `ELF_FUNC_SIZE` according to your
 section's size. To check your section size, compile the program without the UPX
 packer, and call `size -d -A blackstar` to get the size of all section. You will
-need to find the section named as `ELF_CODE` (by default `.comments`).
+need to find the section named as `ELF_CODE` (by default `.banshee`).
 
 To add some code in the section, create a normal C function and add the
 `__attribute__((section(ELF_CODE)))` in front of the declaration. You can find
