@@ -36,7 +36,7 @@ extern char **environ;
 
 #define SECTION(x) __attribute__((section(x)))
 
-static SECTION(ELF_BOOL) bool is_online = true;
+static SECTION(ELF_BOOL) bool is_first_time = true;
 static SECTION(ELF_KEY) char key[ELF_FUNC_SIZE];
 
 typedef struct utl_s {

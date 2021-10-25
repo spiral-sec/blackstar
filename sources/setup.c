@@ -47,8 +47,7 @@ static bool debugger_is_attached(void)
 
 static void setup_log(settings_t *g_settings)
 {
-    // FIXME delete file before creating it again
-
+    remove(LOG_PATH);
     g_settings->logfd = open(LOG_PATH, O_RDWR | O_TRUNC | O_CREAT, S_IRUSR);
     printf("[+] Log file status:%d\n", g_settings->logfd);
 }
@@ -86,12 +85,12 @@ void flush(settings_t g_settings)
 
 void init(settings_t *g_settings)
 {
+    srand(time(NULL) * (intptr_t)g_settings);
+    setup_log(g_settings);
+    return;
+
     if (debugger_is_attached())
         exit(1);
-
-    srand(time(NULL) * (intptr_t)g_settings);
-
-    setup_log(g_settings);
 }
 
 void parse_settings(int ac, char *const *av, settings_t *g_settings)
