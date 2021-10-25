@@ -55,7 +55,7 @@ clean:
 
 fclean: clean
 	@$(RM) $(NAME)
-	@$(RM) include/$(LIB_HEADER)
+	@$(RM) $(LIB_HEADER)
 	@echo "[*** CRYPTER: CLEAN ***]"
 
 re: fclean all
