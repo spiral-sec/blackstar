@@ -38,9 +38,13 @@ We hope to tackle at least some of these problems.
 ## How do I build the project ?
 
 ```bash
+# this will encrypt the binary with the bin stored in crypter/
 make
 
-# run with admin privileges
+# run once to decrypt the program
+./blackstar
+
+# run with admin privileges on the target machine
 ./blackstar -i 192.168.1.69 -p 6969
 
 # clean the repo like so
@@ -58,11 +62,11 @@ To add some code in the section, create a normal C function and add the
 `__attribute__((section(ELF_CODE)))` in front of the declaration. You can find
 an example in `payload.c`.
 
-## Current goals
+## Roadmap
 
+- [x] Crypt the virus from another program
+- [ ] Create a library for all the common code
 - [ ] Create a usable and working spyware, reading and transmitting important files,
     logging keystrokes, and setting up a revshell
-- [ ] Improve the obfuscation method to use the less amount of section possible
-- [ ] Find a way to easely find the address of a value in the binary so that we
-can just hardcode it and not depend on sections
-- [ ] add python webserver to get a nice web interface with all the retrieved data
+- [ ] Add some encryption methods
+- [ ] Add python webserver to get a nice web interface with all the retrieved data
