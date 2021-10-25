@@ -45,7 +45,7 @@ make
 ./blackstar
 
 # run with admin privileges on the target machine
-./blackstar -i 192.168.1.69 -p 6969
+./blackstar
 
 # clean the repo like so
 make fclean
@@ -53,10 +53,8 @@ make fclean
 
 ## Can I add my own payload instead of using the one that is present ?
 
-Yes, you can ! But you will need to change the `ELF_FUNC_SIZE` according to your
-section's size. To check your section size, compile the program without the UPX
-packer, and call `size -d -A blackstar` to get the size of all section. You will
-need to find the section named as `ELF_CODE` (by default `.banshee`).
+Yes, you can ! You will need to find the section named as `ELF_CODE` (by
+default `.banshee`).
 
 To add some code in the section, create a normal C function and add the
 `__attribute__((section(ELF_CODE)))` in front of the declaration. You can find

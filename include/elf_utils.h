@@ -27,17 +27,9 @@ extern char **environ;
 #define ELF_CODE (".banshee")
 #define ELF_BOOL (".isalive")
 
-/*
-   To get the func section size, we can use
-        size -d -A --radix=16 [binary]
-    to get ELF_CODE's section size.
-*/
-#define ELF_FUNC_SIZE (146)
-
 #define SECTION(x) __attribute__((section(x)))
-
 static SECTION(ELF_BOOL) bool is_encrypted = true;
-static SECTION(ELF_KEY) char key[ELF_FUNC_SIZE];
+static SECTION(ELF_KEY) char key[256];
 
 // payload.c
 void setup_payload(settings_t *);
