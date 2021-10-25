@@ -8,7 +8,7 @@ RM			 	= rm -rf
 
 INCLUDES 	 	= -I./include/
 LINK_FLAG    	=
-CFLAGS 		 	= -Wall -Wextra -O2 -fPIC -Wshadow -Wdouble-promotion \
+CFLAGS 		 	= -Wall -Wextra -fPIC -Wshadow -Wdouble-promotion \
 				  -Wformat=2 -Wformat-truncation=2 -Wundef -fno-common \
 				  -Wfloat-equal -Wcast-align -Wstrict-prototypes \
 				  -Wstrict-overflow=5 -Wwrite-strings -Waggregate-return \
@@ -61,13 +61,7 @@ $(NAME): $(OBJ)
 	@$(CC) -o $(NAME) $^ $(CFLAGS) $(DEBUG_FLAGS) $(INCLUDES) $(LINK_FLAG)
 	@echo "[** RUNNING CRYPTER **]"
 	@./$(CRYPTER_BIN) "Some key" ".banshee" ".st_peter" $(NAME)
-	@strip --strip-all $(NAME)
 	@echo "[*** COMPILATION SUCCESSFUL ***]"
-
-pack: all
-	@upx --best $(NAME)
-	@./.cleanup $(NAME)
-	@echo "[*** CLEANED $(NAME) ***]"
 
 clean:
 	@make --no-print-directory clean -C $(CRYPTER_PATH)
