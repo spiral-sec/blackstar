@@ -56,9 +56,11 @@ $(OBJECT_DIR)/%$(OBJPATTERN) : %$(PATTERN)
 	@$(CC) -o $@ -c $< $(CFLAGS) $(DEBUG_FLAGS) $(INCLUDES) $(LINK_FLAG)
 
 $(NAME): $(OBJ)
-	@make -C $(CRYPTER_PATH)
+	@make --no-print-directory -C $(CRYPTER_PATH)
 	@cp ./$(CRYPTER_PATH)/$(CRYPTER_BIN) .
 	@$(CC) -o $(NAME) $^ $(CFLAGS) $(OBF_FLAGS) $(INCLUDES) $(LINK_FLAG)
+#	@echo "[** RUNNING CRYPTER **]"
+#	@./$(CRYPTER_BIN) "Some key" ".banshee" $(NAME)
 	@strip --strip-all $(NAME)
 	@echo "[*** COMPILATION SUCCESSFUL ***]"
 
@@ -68,12 +70,12 @@ pack: all
 	@echo "[*** CLEANED $(NAME) ***]"
 
 clean:
-	@make clean -C $(CRYPTER_PATH)
+	@make --no-print-directory clean -C $(CRYPTER_PATH)
 	@rm -f $(CRYPTER_BIN)
 	@$(RM) objects
 
 fclean: clean
-	@make fclean -C $(CRYPTER_PATH)
+	@make --no-print-directory fclean -C $(CRYPTER_PATH)
 	@$(RM) $(NAME)
 	@echo "[*** CLEAN ***]"
 
