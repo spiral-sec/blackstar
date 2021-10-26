@@ -1,17 +1,8 @@
 
 #include "blackstar.h"
+#include <stdint.h>
 #include <stdlib.h>
-
-static char *get_key(unsigned char *ptr, size_t size)
-{
-    char *result = malloc(sizeof(char) * (size + 1));
-
-    if (!result)
-        return NULL;
-    for (size_t i = 0; i < size; i++)
-        result[i] = ptr[i];
-    return result;
-}
+#include <string.h>
 
 char *gen_new_key(time_t seed)
 {
@@ -26,7 +17,7 @@ char *gen_new_key(time_t seed)
     return result;
 }
 
-int decrypt_section(blackstar_t *bstar, const char *code_sname,
+int bl_decrypt_section(blackstar_t *bstar, const char *code_sname,
 const char *key_sname, const char *bool_sname, crypter_t crypter)
 {
     Elf64_Shdr *code_section = bl_find_section(bstar->content, code_sname);
@@ -39,19 +30,13 @@ const char *key_sname, const char *bool_sname, crypter_t crypter)
     if (!code_section || !bool_section || !key_section)
         return 1;
 
-    // Decrypting code section
-    key = get_key((unsigned char *)(bstar->content
-    + key_section->sh_offset), key_section->sh_size);
-    code_len = code_section->sh_size;
-    ptr = bstar->content + code_section->sh_offset;
-    if (bl_change_section_wperm(ptr, code_len, true) != 0)
-       return 1;
-        crypter(ptr, code_len, key);
-    if (bl_change_section_wperm(ptr, code_len, false) != 0)
-        return 1;
+    // Decrypting key section with code section
+    // then code section with key section
+    bl_naive_crypter(bstar, key_sname, code_sname, crypter);
+    bl_naive_crypter(bstar, code_sname, key_sname, crypter);
 
     // gen_new_key here
-    key = gen_new_key(time(NULL));
+    key = gen_new_key(time(NULL) * ((intptr_t)key_section % 255));
     ptr = bstar->content + key_section->sh_offset;
     bl_edit_section(ptr, key_section->sh_size, key);
 

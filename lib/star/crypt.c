@@ -1,17 +1,11 @@
 
 #include "blackstar.h"
 
+#include <elf.h>
 #include <string.h>
 #include <unistd.h>
 #include <sys/mman.h>
-
-void xor_crypt(unsigned char *data, size_t data_len, char *key)
-{
-    int key_len = strlen(key);
-
-    for (size_t i = 0; i < data_len; i++)
-        data[i] ^= key[i % key_len];
-}
+#include <stdlib.h>
 
 int bl_change_section_wperm(unsigned char *ptr, size_t s_len, bool should_write)
 {
@@ -35,6 +29,48 @@ void bl_edit_section(unsigned char *ptr, size_t size, char *new_val)
     bl_change_section_wperm(ptr, size, false);
 }
 
+char *bl_get_section_content(blackstar_t *bstar, const char *key, size_t *size)
+{
+    Elf64_Shdr *shdr = bl_find_section(bstar->content, key);
+    char *result = NULL;
+    unsigned char *ptr = NULL;
+
+    if (!shdr)
+        return NULL;
+    ptr = bstar->content + shdr->sh_offset;
+    *size = shdr->sh_size;
+
+    result = malloc(sizeof(char) * (*size + 1));
+    if (!result)
+        return NULL;
+
+    for (size_t i = 0; i < *size; i++)
+        result[i] = ptr[i];
+    result[*size] = 0;
+    return result;
+}
+
+void bl_naive_crypter(blackstar_t *bstar, const char *target_sname,
+const char *key_sname, crypter_t cr)
+{
+    Elf64_Shdr *target = bl_find_section(bstar->content, target_sname);
+    size_t key_size = 0;
+    char *key = bl_get_section_content(bstar, key_sname, &key_size);
+    unsigned char *ptr = NULL;
+    size_t target_size = 0;
+
+    if (!key || !target)
+        return;
+    ptr = bstar->content + target->sh_offset;
+    target_size = target->sh_size;
+
+    bl_change_section_wperm(ptr, target_size, true);
+    cr(ptr, target_size, key, key_size);
+    bl_change_section_wperm(ptr, target_size, false);
+
+    free(key);
+}
+
 int bl_encrypt_section(blackstar_t *bstar, const char *code_sname,
 const char *key_sname, const char *bool_sname, crypter_t crypter, char *key)
 {
@@ -47,16 +83,14 @@ const char *key_sname, const char *bool_sname, crypter_t crypter, char *key)
     if (!code_section || !bool_section || !key_section)
         return 1;
 
-    // Encrypting code section
-    code_len = code_section->sh_size;
-    ptr = bstar->content + code_section->sh_offset;
-    bl_change_section_wperm(ptr, code_len, true);
-    crypter(ptr, code_len, key);
-    bl_change_section_wperm(ptr, code_len, false);
-
     // Setting key to key section
     ptr = bstar->content + key_section->sh_offset;
     bl_edit_section(ptr, key_section->sh_size, key);
+
+    // Encrypting code section with key section,
+    // then key section with code section
+    bl_naive_crypter(bstar, code_sname, key_sname, crypter);
+    bl_naive_crypter(bstar, key_sname, code_sname, crypter);
 
     // Setting is_encrypted boolean to true
     ptr = bstar->content + bool_section->sh_offset;

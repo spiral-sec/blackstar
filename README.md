@@ -64,7 +64,7 @@ an example in `payload.c`.
 
 - [x] Crypt the virus from another program
 - [x] Create a library for all the common code
-- [ ] Create a usable and working spyware, reading and transmitting important files,
+- [x] Create a usable and working spyware, reading and transmitting important files,
     logging keystrokes, and setting up a revshell
-- [ ] Add some encryption methods
+- [x] Improve encryption method
 - [ ] Add python webserver to get a nice web interface with all the retrieved data

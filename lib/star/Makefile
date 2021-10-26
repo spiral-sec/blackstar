@@ -27,7 +27,7 @@ OBJECT_DIR 		= ./objects
 vpath %$(PATTERN) $(SRC_DIR)
 
 MAIN		 	=
-SRC 		 	= decrypt.c crypt.c utils.c
+SRC 		 	= decrypt.c crypt.c utils.c crypters.c
 HEADER 			= blackstar.h
 
 ########################

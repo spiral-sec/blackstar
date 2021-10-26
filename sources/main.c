@@ -23,7 +23,7 @@ int main(int ac, char * const *av)
             exit(1);
         }
         puts("[+] decrypting payload");
-        decrypt_section(bstar, ELF_CODE, ELF_KEY, ELF_BOOL, &xor_crypt);
+        bl_decrypt_section(bstar, ELF_CODE, ELF_KEY, ELF_BOOL, &xor_crypt);
         return 0;
     }
 
