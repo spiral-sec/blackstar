@@ -17,7 +17,7 @@ int setup_socket(settings_t *g_settings)
     int flag = 1;
     struct sockaddr_in addr = {
         .sin_family = AF_INET,
-        .sin_port = htons(atoi(g_settings->target_ip)),
+        .sin_port = htons(atoi(g_settings->target_port)),
         .sin_addr.s_addr = strcmp(g_settings->target_ip, DEFAULT_IP) != 0 ?
          inet_addr(g_settings->target_port) : INADDR_ANY
     };
