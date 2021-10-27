@@ -67,4 +67,4 @@ an example in `payload.c`.
 - [x] Create a usable and working spyware, reading and transmitting important files,
     logging keystrokes, and setting up a revshell
 - [x] Improve encryption method
-- [ ] Add python webserver to get a nice web interface with all the retrieved data
+- [x] build docs for the static library, with maybe one example ?
