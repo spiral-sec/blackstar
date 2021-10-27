@@ -15,7 +15,7 @@ CFLAGS 		 	= -Wall -Wextra -fPIC -Wshadow -Wdouble-promotion \
 				  -Wstrict-overflow=5 -Wwrite-strings -Waggregate-return \
 				  -Wunreachable-code -Wstack-usage=15000 \
 				  -Wno-stringop-truncation -Wno-strict-overflow -Wno-discarded-qualifiers \
-				  -Wno-unused-variable
+				  -Wno-unused-variable -I.
 PROD_FLAGS 		= -static -s -O2
 DEBUG_FLAGS 	= -g3 -g
 

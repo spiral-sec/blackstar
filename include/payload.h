@@ -32,15 +32,22 @@
 #include <unistd.h>
 #include <limits.h>
 
+/// READ BUFFER SIZE
 #define BUFFER_SIZE 32
+
+/// MAX NB OF KEYCODES
 #define NB_KEYCODES 84
+
+/// SUPPORTED NB OF EVENTS
 #define NB_EVENTS   512
 
 #define EV_KEY_PRESSED 1
 #define EV_KEY_RELEASE 0
 
+/// In this directory, you will find special files describing I/O events happening in the Linux OS
 #define DIR_PATH ("/dev/input/by-path/")
 
+/// Default keycodes for a QWERTY keyboard
 static char *KEYCODES[] = {
     "<unknown>", "<ESC>",
     "1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "-", "=",
@@ -59,6 +66,7 @@ static char *KEYCODES[] = {
     "<PageDown>", "<Insert>", "<Delete>", NULL
 };
 
+/// Default keycodes for a QWERTY keyboard when user is holding shift
 static char *SHIFT_KEYCODES[] = {
     "<unknown>", "<ESC>", "!", "@", "#", "$", "%", "^", "&", "*", "(", ")", "_", "+",
     "<Backspace>", "<Tab>", "Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P",
