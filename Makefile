@@ -23,7 +23,7 @@ OBJPATTERN  	= .o
 SRC_DIR 		= ./sources
 OBJECT_DIR 		= ./objects
 
-CRYPTER_PATH 	= ./crypter
+CRYPTER_PATH 	= ./scripts/crypter
 CRYPTER_BIN 	= blackstar_crypter
 
 LIB_PATH 		= ./lib/star/
