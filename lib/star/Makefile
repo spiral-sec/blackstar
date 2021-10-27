@@ -21,7 +21,7 @@ DEBUG_FLAGS 	= -g3 -g
 
 PATTERN 	 	= .c
 OBJPATTERN  	= .o
-SRC_DIR 		= .
+SRC_DIR 		= ./sources
 OBJECT_DIR 		= ./objects
 
 vpath %$(PATTERN) $(SRC_DIR)
@@ -30,12 +30,16 @@ MAIN		 	=
 SRC 		 	= decrypt.c crypt.c utils.c crypters.c
 HEADER 			= blackstar.h
 
+DOCS_DIR 		= ./docs
+
 ########################
 #### COMPILATION #######
 ########################
 
 COMBINED		= $(SRC) $(MAIN)
 OBJ 	 		= $(patsubst %$(PATTERN), $(OBJECT_DIR)/%$(OBJPATTERN), $(COMBINED))
+
+.PHONY: all clean fclean re directories doc
 
 all: directories $(NAME)
 
@@ -61,7 +65,11 @@ fclean: clean
 	@$(RM) ../../include/$(HEADER)
 	@$(RM) ../../$(NAME)
 	@$(RM) $(NAME)
+	@make --no-print-directory ./docs/ clean
 	@echo "[*** LIB: CLEAN ***]"
 
 re: fclean all
+
+doc:
+	@make --no-print-directory ./docs
 
