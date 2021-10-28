@@ -10,6 +10,11 @@ The goal of the project was to build some knowledge regarding obfuscation,
  Whitecomet project managed to work around anti-viruses, and I implemented it in
  a [keylogger](github.com/bogdzn/keylogger) I had written before.
 
+### Disclaimer
+
+This project is only here for educational and research purposes. I am not responsible
+for the stupid things you do. Thank u :)~
+
 ### how does whitecomet work ?
 
 To hide malicious code, Whitecomet exploits sections of an ELF binary. It has one
