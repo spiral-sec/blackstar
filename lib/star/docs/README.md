@@ -26,7 +26,7 @@ char *ksection, char *bsection, char *csection)
 {
     blackstar_t *bstar = NULL;
 
-   bstar = bl_read(av[5]);
+   bstar = bl_read(binary_path);
     if (!bstar)
         return;
     bl_encrypt_section(bstar, csection, key_section, bsection, &xor_crypt, key);
