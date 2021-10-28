@@ -29,7 +29,7 @@ char *ksection, char *bsection, char *csection)
    bstar = bl_read(binary_path);
     if (!bstar)
         return;
-    bl_encrypt_section(bstar, csection, key_section, bsection, &xor_crypt, key);
+    bl_encrypt_section(bstar, csection, ksection, bsection, &xor_crypt, key);
     bl_destroy(bstar);
 }
 ```
