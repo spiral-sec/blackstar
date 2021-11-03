@@ -50,7 +50,7 @@ directories: | $(OBJECT_DIR)
 
 $(OBJECT_DIR)/%$(OBJPATTERN) : %$(PATTERN)
 	@echo "Compiling $@"
-	@$(CC) -o $@ -c $< $(CFLAGS) $(DEBUG_FLAGS) $(INCLUDES) $(LINK_FLAG)
+	@$(CC) -o $@ -c $< $(CFLAGS) $(PROD_FLAGS) $(INCLUDES) $(LINK_FLAG)
 
 $(NAME): $(OBJ)
 	@cp $(HEADER) ../../include
